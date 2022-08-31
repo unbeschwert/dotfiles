@@ -115,36 +115,29 @@ lua << EOF
         snippet = {
             expand = function(args) require('luasnip').lsp_expand(args.body) end
         },
-        mapping = {
+        mapping = cmp.mapping.preset.insert({
             ['<CR>'] = cmp.mapping.confirm({ select = true }),
             ['<Tab>'] = cmp.mapping(
                             function(fallback)
                                 if cmp.visible() then
                                     cmp.confirm({ select = true })
-                                elseif luasnip.expand_or_locally_jumpable() then
+                                elseif luasnip.expand_or_jumpable() then
                                     luasnip.expand_or_jump()
                                 else
                                     fallback()
-                                 end
+                                end
                             end, 
                             { 'i', 's' }
                         )
-        },
-        sources = {
+        }),
+        sources = cmp.config.sources({
             { name = 'nvim_lsp' },
-            { name = 'buffer' },
-        }
+            { name = 'luasnip' }
+        },
+        {
+            { name = 'buffer' }
+        })
     }
-    cmp.setup.cmdline(':', {
-        sources = {
-            { name = 'cmdline' },
-        },
-    })
-    cmp.setup.cmdline('/', {
-        sources = {
-            { name = 'buffer' },
-        },
-    })
 
     require('lsp_signature').setup({
         debug = true,
