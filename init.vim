@@ -1,5 +1,6 @@
 call plug#begin(stdpath('data') . '/plugged')
-
+    
+    Plug 'jalvesaq/Nvim-R', {'branch': 'stable'}
     Plug 'vim-latex/vim-latex'
     Plug 'JuliaEditorSupport/julia-vim'
     Plug 'whonore/Coqtail'
@@ -26,6 +27,8 @@ let g:aurora_transparent = 1
 let g:aurora_bold = 1
 let g:aurora_darker = 1
 
+" settings for mouse 
+set mouse=n
 
 " settings for lightline plugin
 set laststatus=2
@@ -36,8 +39,6 @@ set number
 
 " Moving around 
 nnoremap <C-h> <C-W>h
-nnoremap <C-j> <C-W>j
-nnoremap <C-k> <C-W>k
 nnoremap <C-l> <C-W>l
 
 " Resizing windows
@@ -91,6 +92,9 @@ let mapleader=';'
 
 lua << EOF
     require('nvim-tree').setup {
+        view = {
+            width = 20,
+        },
         renderer = {
             icons = {
                 show = {
@@ -112,6 +116,15 @@ lua << EOF
     local cmp = require('cmp')
     local luasnip = require('luasnip')
     cmp.setup {
+        enabled = function()
+            local context = require('cmp.config.context')
+            if vim.api.nvim_get_mode().mode == 'c' then
+                return true
+            else
+                return not context.in_treesitter_capture("comment") and
+                    not context.in_syntax_group("Comment")
+            end
+        end,
         snippet = {
             expand = function(args) require('luasnip').lsp_expand(args.body) end
         },
@@ -142,11 +155,13 @@ lua << EOF
     require('lsp_signature').setup({
         debug = true,
         log_path = '~/.cache/nvim/signature.log',
-        verbose = true
+        verbose = true,
+        close_timeout = 40,
     })
 
     require('navigator').setup {
         border = {'╭', '─', '╮', '│', '╯', '─', '╰', '│'},
+        lsp_signature_help = true,
         lsp = {
             clangd = {
                 cmd = {'clangd-14',
@@ -157,12 +172,12 @@ lua << EOF
                     '--clang-tidy',
                     '--header-insertion=iwyu'
                 },
-                capabilities = require('cmp_nvim_lsp').update_capabilities(
+                capabilities = require('cmp_nvim_lsp').default_capabilities(
                     vim.lsp.protocol.make_client_capabilities()
                 )
             },
             rust_analyzer = {
-                capabilities = require('cmp_nvim_lsp').update_capabilities(
+                capabilities = require('cmp_nvim_lsp').default_capabilities(
                     vim.lsp.protocol.make_client_capabilities()
                 )
             },
@@ -182,7 +197,7 @@ lua << EOF
                         }                                           
                     }
                 },
-                capabilities = require('cmp_nvim_lsp').update_capabilities(
+                capabilities = require('cmp_nvim_lsp').default_capabilities(
                     vim.lsp.protocol.make_client_capabilities()
                 ),
             }
