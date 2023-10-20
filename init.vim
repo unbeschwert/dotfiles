@@ -161,8 +161,40 @@ lua << EOF
 
     require('navigator').setup {
         border = {'╭', '─', '╮', '│', '╯', '─', '╰', '│'},
+        keymaps = {
+            {
+                key = '<Leader>gt',
+                func = vim.lsp.buf.type_definition,
+                desc = 'type_definition',
+            }
+        },
         lsp_signature_help = true,
         lsp = {
+            servers = {
+                'julials',
+                'clangd',
+                'rust_analyzer',
+                'ruff_lsp',
+                'hls'
+            },
+            julials = {
+                cmd = {
+                    'julia', 
+                    '--startup-file=no', 
+                    '--history-file=no', '-e', 
+                    'using LanguageServer;\
+                    using Pkg;\
+                    import StaticLint;\
+                    import SymbolServer;\
+                    env_path = dirname(Pkg.Types.Context().env.project_file);\
+                    server = LanguageServer.LanguageServerInstance(stdin, stdout, env_path, "");\
+                    server.runlinter = true;\
+                    run(server);'
+                }, 
+                capabilities = require('cmp_nvim_lsp').default_capabilities(
+                    vim.lsp.protocol.make_client_capabilities()
+                ),
+            },
             clangd = {
                 cmd = {'clangd-14',
                     '--background-index',
@@ -181,26 +213,33 @@ lua << EOF
                     vim.lsp.protocol.make_client_capabilities()
                 )
             },
-            pylsp = {
-                settings = {    
-                    configurationSources = {    
-                        'pylint'    
-                    },    
-                    pylsp = {    
-                        plugins = {    
-                            pylint = {    
-                                enabled = true,    
-                                args = {                            
-                                    '--ignore=E501,E231'            
-                                }                                   
-                            }                                       
-                        }                                           
-                    }
+            ruff_lsp = {
+                cmd = {
+                    'ruff-lsp'
+                },
+                filetypes = {
+                    'python'
+                },
+                settings = {
+                    logLevel = 'debug'
                 },
                 capabilities = require('cmp_nvim_lsp').default_capabilities(
                     vim.lsp.protocol.make_client_capabilities()
-                ),
-            }
-        }
+                )
+            },
+            hls = {
+                settings = {
+                    checkParents = 'CheckOnSave',
+                    checkProject = true,
+                    maxCompletions = 40,
+                    formattingProvider = 'ormolu',
+                    plugin = {
+                        stan = { 
+                            globalOn == true,
+                        },
+                    },
+                }
+            },
+        },
     }
 EOF
