@@ -1,6 +1,6 @@
 call plug#begin(stdpath('data') . '/plugged')
     
-    Plug 'jalvesaq/Nvim-R', {'branch': 'stable'}
+    Plug 'jalvesaq/Nvim-R', {'branch': 'master'}
     Plug 'vim-latex/vim-latex'
     Plug 'JuliaEditorSupport/julia-vim'
     Plug 'whonore/Coqtail'
@@ -47,9 +47,6 @@ noremap <S-down> :resize -5<CR>
 noremap <S-left> :vertical:resize -5<CR>
 noremap <S-right> :vertical:resize +5<CR>
 
-" syntax for files
-syntax on
-
 " Wrap lines
 set wrap
 
@@ -59,12 +56,7 @@ set expandtab
 set smarttab
 
 " Enabling file type plugins
-filetype indent on
 filetype plugin on
-
-" Reads a file when changed 
-" outside
-set autoread
 
 " Don't redraw when executing
 " macros
