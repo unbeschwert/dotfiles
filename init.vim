@@ -5,6 +5,8 @@ call plug#begin()
     Plug 'nvim-lualine/lualine.nvim'
     Plug 'nvim-tree/nvim-web-devicons'
     Plug 'rebelot/kanagawa.nvim'
+    Plug 'https://git.sr.ht/~p00f/clangd_extensions.nvim'
+    Plug 'mrcjkb/rustaceanvim'
 
 call plug#end()
 
@@ -57,10 +59,11 @@ lua << EOF
     
     vim.lsp.enable({
         'ruff',
-        'pylsp'
+        'pylsp',
+        'clangd'
     })
     
-    vim.lsp.set_log_level('debug')
+    -- vim.lsp.set_log_level('debug')
 
     vim.api.nvim_create_autocmd('LspAttach', {
         callback = function(ev)
