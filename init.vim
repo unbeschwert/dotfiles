@@ -7,6 +7,8 @@ call plug#begin()
     Plug 'rebelot/kanagawa.nvim'
     Plug 'https://git.sr.ht/~p00f/clangd_extensions.nvim'
     Plug 'mrcjkb/rustaceanvim'
+    Plug 'hrsh7th/nvim-cmp-kit'
+    Plug 'hrsh7th/nvim-ix'
 
 call plug#end()
 
@@ -54,6 +56,8 @@ set completeopt+=menuone,noselect
 
 lua << EOF
 
+    vim.o.winborder = 'rounded'
+    
     require('nvim-tree').setup()
     require('lualine').setup()
     
@@ -64,22 +68,31 @@ lua << EOF
     })
     
     -- vim.lsp.set_log_level('debug')
-
-    vim.api.nvim_create_autocmd('LspAttach', {
-        callback = function(ev)
-            local client = vim.lsp.get_client_by_id(ev.data.client_id)
-            if client and client:supports_method('textDocument/completion') then
-                local chars = {}
-                for i = 32, 126 do
-                    table.insert(chars, string.char(i))
-                end
-                client.server_capabilities.completionProvider.triggerCharacters = chars
-                vim.lsp.completion.enable(
-                    true, client.id, ev.buf, { autotrigger = true }
-                )
-            end
-        end,
+    
+    local ix = require('ix')
+    vim.lsp.config('*', {
+        capabilities = ix.get_capabilities()
     })
+    ix.setup({
+        expand_snippet = function(snippet_body)
+            vim.snippet.expand(snippet_body)
+        end
+    })
+    do
+        vim.keymap.set({ 'i', 'c' }, '<C-d>', ix.action.scroll(0 + 3))
+        vim.keymap.set({ 'i', 'c' }, '<C-u>', ix.action.scroll(0 - 3))
+
+        vim.keymap.set({ 'i', 'c' }, '<C-Space>', ix.action.completion.complete())
+        vim.keymap.set({ 'i', 'c' }, '<C-n>', ix.action.completion.select_next())
+        vim.keymap.set({ 'i', 'c' }, '<C-p>', ix.action.completion.select_prev())
+        vim.keymap.set({ 'i', 'c' }, '<C-e>', ix.action.completion.close())
+        ix.charmap.set('c', '<CR>', ix.action.completion.commit_cmdline())
+        ix.charmap.set('i', '<CR>', ix.action.completion.commit({ select_first = true }))
+        vim.keymap.set('i', '<C-y>', ix.action.completion.commit({ select_first = true, replace = true, no_snippet = true }))
+
+        vim.keymap.set({ 'i', 's' }, '<C-o>', ix.action.signature_help.trigger_or_close())
+        vim.keymap.set({ 'i', 's' }, '<C-j>', ix.action.signature_help.select_next())
+    end
 
     vim.api.nvim_create_autocmd("LspAttach", {
         group = vim.api.nvim_create_augroup(
@@ -96,9 +109,10 @@ lua << EOF
         })
 
     vim.diagnostic.config({
-        virtual_text = {
-            current_line = true
+        virtual_lines = {
+            current_line = true,
         },
+        virtual_text = false,
     })
     
 EOF
